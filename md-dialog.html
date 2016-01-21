@@ -15,7 +15,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <!--
 Material design: [Dialogs](https://www.google.com/design/spec/components/dialogs.html)
 
-`<paper-dialog>` is a dialog with Material Design styling and optional animations when it is
+`<md-dialog>` is a dialog with Material Design styling and optional animations when it is
 opened or closed. It provides styles for a header, content area, and an action area for buttons.
 You can use the `<paper-dialog-scrollable>` element (in its own repository) if you need a scrolling
 content area. See `Polymer.PaperDialogBehavior` for specifics.
@@ -23,7 +23,7 @@ content area. See `Polymer.PaperDialogBehavior` for specifics.
 For example, the following code implements a dialog with a header, scrolling content area and
 buttons.
 
-    <paper-dialog>
+    <md-dialog>
       <h2>Header</h2>
       <paper-dialog-scrollable>
         Lorem ipsum...
@@ -32,42 +32,59 @@ buttons.
         <paper-button dialog-dismiss>Cancel</paper-button>
         <paper-button dialog-confirm>Accept</paper-button>
       </div>
-    </paper-dialog>
+    </md-dialog>
 
 ### Styling
 
 See the docs for `Polymer.PaperDialogBehavior` for the custom properties available for styling
 this element.
 
-### Animations
 
-Set the `entry-animation` and/or `exit-animation` attributes to add an animation when the dialog
-is opened or closed. See the documentation in
-[PolymerElements/neon-animation](https://github.com/PolymerElements/neon-animation) for more info.
-
-For example:
-
-    <link rel="import" href="components/neon-animation/animations/scale-up-animation.html">
-    <link rel="import" href="components/neon-animation/animations/fade-out-animation.html">
-
-    <paper-dialog entry-animation="scale-up-animation"
-                  exit-animation="fade-out-animation">
-      <h2>Header</h2>
-      <div>Dialog body</div>
-    </paper-dialog>
-
-### Accessibility
-
-See the docs for `Polymer.PaperDialogBehavior` for accessibility features implemented by this
-element.
-
-@group Paper Elements
-@element paper-dialog
-@hero hero.svg
-@demo demo/index.html
 -->
-
+<style>
+  @@media only screen and (max-width: 640px) and (min-width: 220px){
+       md-dialog{
+           width:315px;
+           height:300px;
+           top:5px;
+           left:5px;
+           font-size:14px;
+       }
+       md-dialog .dialog{
+           height:270px;
+       }
+    }  
+</style>    
 <dom-module id="md-dialog">
+  <style>
+   :host {
+        width:500px;
+        height:400px;
+        background:#fff;
+        padding:1em;
+        box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.4);
+        position:fixed;
+        z-index:99999999;
+        left:calc(50% - 250px);
+        top:calc(50% - 200px);
+    }
+    
+    :host .dialog{
+        height:370px;
+    }
+    :host .bottom{
+        margin-top:auto;
+    }
+    :host button {
+      background:none;
+      padding: .5em .6em;
+      border:0;
+      position:relative;
+    }
+    :host textarea{
+        resize:none;
+    }
+  </style>  
   <template>
     <style include="paper-dialog-shared-styles"></style>
     <content></content>
@@ -80,7 +97,7 @@ element.
 
   Polymer({
 
-    is: 'paper-dialog',
+    is: 'md-dialog',
 
     properties:{
         isOpen: {
