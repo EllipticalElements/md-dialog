@@ -14,15 +14,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-dialog-behavior/paper-dialog-shared-styles.html">
 <!--
 Material design: [Dialogs](https://www.google.com/design/spec/components/dialogs.html)
-
 `<md-dialog>` is a dialog with Material Design styling and optional animations when it is
 opened or closed. It provides styles for a header, content area, and an action area for buttons.
 You can use the `<paper-dialog-scrollable>` element (in its own repository) if you need a scrolling
 content area. See `Polymer.PaperDialogBehavior` for specifics.
-
 For example, the following code implements a dialog with a header, scrolling content area and
 buttons.
-
     <md-dialog>
       <h2>Header</h2>
       <paper-dialog-scrollable>
@@ -33,107 +30,140 @@ buttons.
         <paper-button dialog-confirm>Accept</paper-button>
       </div>
     </md-dialog>
-
 ### Styling
-
 See the docs for `Polymer.PaperDialogBehavior` for the custom properties available for styling
 this element.
-
-
 -->
 <style>
-  @@media only screen and (max-width: 640px) and (min-width: 220px){
-       md-dialog{
-           width:315px;
-           height:300px;
-           top:5px;
-           left:5px;
-           font-size:14px;
-       }
-       md-dialog .dialog{
-           height:270px;
-       }
-    }  
-</style>    
+    @media only screen and (max-width: 640px) and (min-width: 220px){
+        md-dialog{
+            width:315px;
+            height:300px;
+            top:5px;
+            left:5px;
+            font-size:14px;
+        }
+    }
+    md-dialog{
+        display:none;
+    }
+</style>
 <dom-module id="md-dialog">
-  <style>
-   :host {
-        width:500px;
-        height:400px;
-        background:#fff;
-        padding:1em;
-        box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.4);
-        position:fixed;
-        z-index:99999999;
-        left:calc(50% - 250px);
-        top:calc(50% - 200px);
-    }
-    
-    :host .dialog{
-        height:370px;
-    }
-    :host .bottom{
-        margin-top:auto;
-    }
-    :host button {
-      background:none;
-      padding: .5em .6em;
-      border:0;
-      position:relative;
-    }
-    :host textarea{
-        resize:none;
-    }
-  </style>  
-  <template>
-    <style include="paper-dialog-shared-styles"></style>
-    <content></content>
-  </template>
+    <style>
+        :host {
+            width:500px;
+            height:400px;
+            background:#fff;
+            padding:1em;
+            box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.4);
+            position:fixed;
+            z-index:99999999;
+            left:calc(50% - 250px);
+            top:calc(50% - 200px);
+        }
+        :host ::content .bottom{
+            margin-top:auto;
+            display:-webkit-flex;
+            display:flex;
+            -webkit-justify-content:flex-end;
+            justify-content:flex-end;
+        }
+        :host ::content button {
+            background:none;
+            padding: .5em .6em;
+            border:0;
+            position:relative;
+        }
+        :host ::content textarea{
+            resize:none;
+        }
+    </style>
+    <template>
+        <content></content>
+    </template>
 </dom-module>
 
 <script>
+    (function() {
+        Polymer({
+            is: 'md-dialog',
+            properties:{
+                isOpen: {
+                    type: Boolean,
+                    value:false
+                },
+                id:{
+                    type:String,
+                    value:null
+                }
+            },
+            ready:function(){
+                var id=this.id;
+                if(id) this._listenerOn(id);
+                this._cancelListener();
+            },
 
-(function() {
+            detached:function(){
+                var id=this.id;
+                if(id) this._listenerOff(id);
+                this._cancelListenerOff();
+            },
 
-  Polymer({
+            _listenerOn:function(){
+                var id=this.id;
+                var click=this._getClickEvent();
+                $(document).on('[dialog="' + id + '"]',click,this.open.bind(this));
+            },
 
-    is: 'md-dialog',
+            _listenerOff:function(){
+                var id=this.id;
+                var click=this._getClickEvent();
+                $(document).off('[dialog="' + id + '"]',click,this.open.bind(this));
+            },
 
-    properties:{
-        isOpen: {
-            type: Boolean,
-            value:false
-        }
-    },
+            _cancelListener:function(){
+                var click=this._getClickEvent();
+                $(this).on(click,'[cancel]',this.close.bind(this));
+            },
 
-  
-    _renderOpened: function() {
-        this.style.display = 'block';
-    },
+            _cancelListenerOff:function(){
+                var click=this._getClickEvent();
+                $(this).off(click,'[cancel]',this.close.bind(this));
+            },
 
-    _renderClosed: function() {
-        this.style.display = 'none';
+            _getClickEvent:function(){
+                return ('ontouchend' in document) ? 'touchstart' : 'click';
+            },
 
-    },
+            _fireEvent:function(evt){
+                var data={
+                    id:this.id,
+                    target:this
+                };
+                $(document).trigger('md.dialog.' + evt,data);
+            },
 
-    open:function(){
-        if (!this.isOpen) {
-            this.isOpen = true;
-            this._renderOpened();
-        }
-    },
+            _renderOpened: function() {
+                this.style.display = 'block';
+                this._fireEvent('open');
+            },
+            _renderClosed: function() {
+                this.style.display = 'none';
+                this._fireEvent('close');
+            },
+            open:function(){
+                if (!this.isOpen) {
+                    this.isOpen = true;
+                    this._renderOpened();
+                }
+            },
+            close: function () {
+                if (this.isOpen) {
+                    this.isOpen = false;
+                    this._renderClosed();
+                }
+            }
 
-    close: function () {
-        if (this.isOpen) {
-            this.isOpen = false;
-            this._renderClosed();
-        }
-    }
-
-    
-
-  });
-
-})();
-
+        });
+    })();
 </script>
