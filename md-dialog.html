@@ -12,6 +12,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../neon-animation/neon-animation-runner-behavior.html">
 <link rel="import" href="../paper-dialog-behavior/paper-dialog-behavior.html">
 <link rel="import" href="../paper-dialog-behavior/paper-dialog-shared-styles.html">
+<link rel="import" href="../elliptical-polymer-behaviors/component-behavior.html">
 <!--
 Material design: [Dialogs](https://www.google.com/design/spec/components/dialogs.html)
 `<md-dialog>` is a dialog with Material Design styling and optional animations when it is
@@ -87,6 +88,7 @@ this element.
     (function() {
         Polymer({
             is: 'md-dialog',
+            behaviors:[Elliptical.ComponentBehavior],
             properties:{
                 isOpen: {
                     type: Boolean,
@@ -95,6 +97,22 @@ this element.
                 id:{
                     type:String,
                     value:null
+                },
+                disableModal:{
+                    type:Boolean,
+                    value:false
+                },
+                modalBackground:{
+                    type:String,
+                    value:'#fff'
+                },
+                modalOpacity:{
+                    type:Number,
+                    value:0
+                },
+                modalZIndex:{
+                    type:Number,
+                    value:2000
                 }
             },
             ready:function(){
@@ -144,19 +162,38 @@ this element.
             },
 
             _renderOpened: function() {
+                this._renderModal();
                 this.style.display = 'block';
                 this._fireEvent('open');
             },
             _renderClosed: function() {
+                this._deleteModal();
                 this.style.display = 'none';
                 this._fireEvent('close');
             },
+
+            _renderModal:function(){
+                if(!this.disableModal){
+                    var opts={
+                        zIndex:this.modalZIndex,
+                        background:this.modalBackground,
+                        opacity:this.modalOpacity
+                    };
+                    this._setModal(opts);
+                }
+            },
+
+            _deleteModal:function(){
+                if(!this.disableModal) this._removeModal();
+            },
+
             open:function(){
                 if (!this.isOpen) {
                     this.isOpen = true;
                     this._renderOpened();
                 }
             },
+
             close: function () {
                 if (this.isOpen) {
                     this.isOpen = false;
