@@ -13,6 +13,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-dialog-behavior/paper-dialog-behavior.html">
 <link rel="import" href="../paper-dialog-behavior/paper-dialog-shared-styles.html">
 <link rel="import" href="../elliptical-polymer-behaviors/component-behavior.html">
+<link rel="import" href="../md-fonts/md-fonts.html">
 <!--
 Material design: [Dialogs](https://www.google.com/design/spec/components/dialogs.html)
 `<md-dialog>` is a dialog with Material Design styling and optional animations when it is
@@ -38,7 +39,7 @@ this element.
 <style>
     @media only screen and (max-width: 640px) and (min-width: 220px){
         md-dialog{
-            width:315px;
+            width:95%;
             height:300px;
             top:5px;
             left:5px;
@@ -48,10 +49,20 @@ this element.
     md-dialog{
         display:none;
     }
+    .ui-modal{
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width:100%;
+        height:100%;
+    }
 </style>
 <dom-module id="md-dialog">
     <style>
         :host {
+            font-family:'Roboto';
             width:500px;
             height:400px;
             background:#fff;
@@ -62,14 +73,27 @@ this element.
             left:calc(50% - 250px);
             top:calc(50% - 200px);
         }
-        :host ::content .bottom{
+        :host>.dialog-content-container{
+            display:-webkit-flex;
+            display:flex;
+            -webkit-flex-direction: column;
+            flex-direction: column;
+            height:100%
+        }
+        :host>.dialog-content-container>.content-container{
+            height:100%;
+            overflow-y: auto;
+            overflow-x:hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+        :host>.dialog-content-container>.bottom{
             margin-top:auto;
             display:-webkit-flex;
             display:flex;
             -webkit-justify-content:flex-end;
             justify-content:flex-end;
         }
-        :host ::content button {
+        :host>.dialog-content-container>.bottom>button{
             background:none;
             padding: .5em .6em;
             border:0;
@@ -80,7 +104,15 @@ this element.
         }
     </style>
     <template>
-        <content></content>
+        <div class="dialog-content-container">
+            <div class="content-container">
+                <content></content>
+            </div>
+            <div class="bottom">
+                <button id="dialog-button-cancel" cancel><span>[[cancel]]</span><paper-ripple></paper-ripple></button>
+                <button id="dialog-button-action" action><span>[[action]]</span><paper-ripple></paper-ripple></button>
+            </div>
+        </div>
     </template>
 </dom-module>
 
@@ -93,10 +125,6 @@ this element.
                 isOpen: {
                     type: Boolean,
                     value:false
-                },
-                id:{
-                    type:String,
-                    value:null
                 },
                 disableModal:{
                     type:Boolean,
@@ -113,18 +141,47 @@ this element.
                 modalZIndex:{
                     type:Number,
                     value:2000
+                },
+                width:{
+                    type:Number,
+                    value:null
+                },
+                height:{
+                    type:Number,
+                    value:null
+                },
+                cancel:{
+                    type:String,
+                    value:'Cancel'
+                },
+                action:{
+                    type:String,
+                    value:'Action'
+                },
+                hideAction:{
+                    type:Boolean,
+                    value:false
+                },
+                _id:{
+                    type:String,
+                    value:'dialog-1'
                 }
             },
             ready:function(){
+                this._setId();
+                this._setCss();
+                this._setAction();
                 var id=this.id;
                 if(id) this._listenerOn(id);
                 this._cancelListener();
+                if(!this.hideAction) this._actionListener();
             },
 
             detached:function(){
                 var id=this.id;
                 if(id) this._listenerOff(id);
                 this._cancelListenerOff();
+                if(!this.hideAction) this._actionListenerOff();
             },
 
             _listenerOn:function(){
@@ -144,13 +201,34 @@ this element.
                 $(this).on(click,'[cancel]',this.close.bind(this));
             },
 
+            _actionListener:function(){
+                var click=this._getClickEvent();
+                $(this).on(click,'[action]',this._onAction.bind(this));
+            },
+
             _cancelListenerOff:function(){
                 var click=this._getClickEvent();
                 $(this).off(click,'[cancel]',this.close.bind(this));
             },
 
+            _actionListenerOff:function(){
+                var click=this._getClickEvent();
+                $(this).off(click,'[cancel]',this._onAction.bind(this));
+            },
+
             _getClickEvent:function(){
                 return ('ontouchend' in document) ? 'touchstart' : 'click';
+            },
+
+            _setAction:function(){
+                if(this.hideAction){
+                    var action=this.element.find('[action]');
+                    action.hide();
+                }
+            },
+
+            _onAction:function(){
+                this._fireEvent('action');
             },
 
             _fireEvent:function(evt){
@@ -187,6 +265,34 @@ this element.
                 if(!this.disableModal) this._removeModal();
             },
 
+            _setId:function(){
+                var id=this.element.attr('id');
+                if(!id) this.element.attr('id',this._id);
+            },
+
+            _setCss:function(){
+                if(this._mq.touch){
+                    var viewportWidth=this._device.viewport.width;
+                    if(this.width) {
+                        if(this.width>viewportWidth) this.width=viewportWidth-20;
+                    }
+                    var viewportHeight=this._device.viewport.height;
+                    if(this.height){
+                        if(this.height > viewportHeight) this.height=viewportHeight-50;
+                    }
+                }
+                if(this.width){
+                    var width=this.width/2;
+                    this.element.css('width',this.width + 'px');
+                    this.element.css('left','calc(50% - ' + width + 'px)');
+                }
+                if(this.height){
+                    var height=this.height/2;
+                    this.element.css('height',this.height + 'px');
+                    this.element.css('top','calc(50% - ' + height + 'px)');
+                }
+            },
+
             open:function(){
                 if (!this.isOpen) {
                     this.isOpen = true;
@@ -199,6 +305,11 @@ this element.
                     this.isOpen = false;
                     this._renderClosed();
                 }
+            },
+
+            setContent:function(html){
+                var content=this.element.find('.content-container');
+                content.html(html);
             }
 
         });
