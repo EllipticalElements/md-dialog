@@ -16,7 +16,7 @@ bower install md-dialog --save
 
 <link rel="import" href="bower_components/md-dialog/md-dialog.html">
 
-<md-dialog style="display:none;">
+<md-dialog>
     <H3>My Dialog</h3>
 </md-dialog>    
 ```
