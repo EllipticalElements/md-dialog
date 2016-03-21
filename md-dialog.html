@@ -104,7 +104,7 @@ this element.
         }
     </style>
     <template>
-        <div class="dialog-content-container">
+        <div class="dialog-content-container" id="dialogContentContainer">
             <div class="content-container">
                 <content></content>
             </div>
@@ -234,7 +234,9 @@ this element.
             _fireEvent:function(evt){
                 var data={
                     id:this.id,
-                    target:this
+                    target:this,
+                    action:this.action,
+                    content:this.$.dialogContentContainer
                 };
                 $(document).trigger('md.dialog.' + evt,data);
             },
