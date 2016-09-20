@@ -13,7 +13,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-dialog-behavior/paper-dialog-behavior.html">
 <link rel="import" href="../paper-dialog-behavior/paper-dialog-shared-styles.html">
 <link rel="import" href="../elliptical-polymer-behaviors/component-behavior.html">
+<link rel="import" href="../gsap-import/gsap-import.html">
 <link rel="import" href="../md-fonts/md-fonts.html">
+
 <!--
 Material design: [Dialogs](https://www.google.com/design/spec/components/dialogs.html)
 `<md-dialog>` is a dialog with Material Design styling and optional animations when it is
@@ -37,274 +39,538 @@ See the docs for `Polymer.PaperDialogBehavior` for the custom properties availab
 this element.
 -->
 <style>
-    @media only screen and (max-width: 640px) and (min-width: 220px){
-        md-dialog{
-            width:95%;
-            height:300px;
-            top:5px;
-            left:5px;
-            font-size:14px;
-        }
+  @media only screen and (max-width: 640px) and (min-width: 220px) {
+    md-dialog {
+      max-width: 99% !important;
+      max-height: 98% !important;
+      top: 5px;
+      left: 5px;
+      font-size: 14px;
     }
-    md-dialog{
-        display:none;
-    }
+  }
+
+  md-dialog {
+    display: none;
+  }
+
 </style>
 <dom-module id="md-dialog">
-    <style>
-        :host {
-            font-family:'Roboto';
-            width:500px;
-            height:400px;
-            background:#fff;
-            padding:1em;
-            box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.4);
-            position:fixed;
-            z-index:99999999;
-            left:calc(50% - 250px);
-            top:calc(50% - 200px);
-        }
-        :host>.dialog-content-container{
-            display:-webkit-flex;
-            display:flex;
-            -webkit-flex-direction: column;
-            flex-direction: column;
-            height:100%
-        }
-        :host>.dialog-content-container>.content-container{
-            height:100%;
-            overflow-y: auto;
-            overflow-x:hidden;
-            -webkit-overflow-scrolling: touch;
-        }
-        :host>.dialog-content-container>.bottom{
-            margin-top:auto;
-            display:-webkit-flex;
-            display:flex;
-            -webkit-justify-content:flex-end;
-            justify-content:flex-end;
-        }
-        :host>.dialog-content-container>.bottom>button{
-            background:none;
-            padding: .5em .6em;
-            border:0;
-            position:relative;
-        }
-        :host ::content textarea{
-            resize:none;
-        }
-    </style>
-    <template>
-        <div class="dialog-content-container" id="dialogContentContainer">
-            <div class="content-container">
-                <content></content>
-            </div>
-            <div class="bottom">
-                <button id="dialog-button-cancel" cancel><span>[[cancel]]</span><paper-ripple></paper-ripple></button>
-                <button id="dialog-button-action" action><span>[[action]]</span><paper-ripple></paper-ripple></button>
-            </div>
-        </div>
-    </template>
+  <style>
+    :host {
+      font-family: 'robotoregular';
+      width: 500px;
+      height: 400px;
+      background: #fff;
+      padding: 1em;
+      box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.4);
+      position: fixed;
+      z-index: 99999999;
+      left: calc(50% - 250px);
+      top: calc(50% - 200px);
+    }
+
+    :host.no-padding{
+      padding:0;
+    }
+
+    :host > .dialog-content-container {
+      display: -webkit-flex;
+      display: flex;
+      -webkit-flex-direction: column;
+      flex-direction: column;
+      height: 100%;
+      position:relative;
+    }
+
+    :host > .dialog-content-container > .content-container {
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    :host > .dialog-content-container > .content-container ::content header.stationary {
+      position:absolute;
+      z-index:20;
+      border-bottom:1px solid #eee;
+      background:#fff;
+    }
+
+    :host > .dialog-content-container > .bottom {
+      margin-top: auto;
+      display: -webkit-flex;
+      display: flex;
+      -webkit-justify-content: flex-end;
+      justify-content: flex-end;
+    }
+
+    :host.no-padding > .dialog-content-container > .bottom {
+      padding:1em;
+    }
+
+    :host > .dialog-content-container > .bottom > button {
+      background: none;
+      padding: .5em .6em;
+      border: 0;
+      position: relative;
+      text-transform: uppercase;
+    }
+
+    :host .bottom > button {
+      color: var(--md-dialog-button-color, #333);
+    }
+
+    :host .bottom > button[data-id=undefined]{
+      display:none;
+    }
+
+    :host .bottom > button[data-id=null]{
+      display:none;
+    }
+
+    :host .bottom > button.disabled {
+      color: #ddd;
+      cursor:default;
+    }
+
+    :host .bottom > button.disabled:focus {
+      outline:none !important;
+    }
+
+    :host .bottom > button.disabled paper-ripple {
+      display:none;
+    }
+
+    :host ::content textarea {
+      resize: none;
+    }
+
+    :host.hide-action-buttons .bottom {
+      display: none;
+    }
+
+    :host .hide {
+      display: none;
+    }
+  </style>
+  <template>
+    <div class="dialog-content-container" id="dialogContentContainer">
+      <div class="content-container">
+        <content></content>
+      </div>
+      <div class="bottom">
+        <button id="dialogButtonCancel" cancel><span>[[cancel]]</span>
+          <paper-ripple></paper-ripple>
+        </button>
+        <button id="dialogButtonAction" action><span>[[action]]</span>
+          <paper-ripple></paper-ripple>
+        </button>
+      </div>
+    </div>
+  </template>
 </dom-module>
 
 <script>
-    (function() {
-        Polymer({
-            is: 'md-dialog',
-            behaviors:[Elliptical.ComponentBehavior],
-            properties:{
-                isOpen: {
-                    type: Boolean,
-                    value:false
-                },
-                disableModal:{
-                    type:Boolean,
-                    value:false
-                },
-                modalBackground:{
-                    type:String,
-                    value:'#fff'
-                },
-                modalOpacity:{
-                    type:Number,
-                    value:0
-                },
-                modalZIndex:{
-                    type:Number,
-                    value:2000
-                },
-                width:{
-                    type:Number,
-                    value:null
-                },
-                height:{
-                    type:Number,
-                    value:null
-                },
-                cancel:{
-                    type:String,
-                    value:'Cancel'
-                },
-                action:{
-                    type:String,
-                    value:'Action'
-                },
-                hideAction:{
-                    type:Boolean,
-                    value:false
-                },
-                _id:{
-                    type:String,
-                    value:'dialog-1'
-                }
-            },
-            ready:function(){
-                this._setId();
-                this._setCss();
-                this._setAction();
-                var id=this.id;
-                if(id) this._listenerOn(id);
-                this._cancelListener();
-                if(!this.hideAction) this._actionListener();
-            },
+  (function () {
+    Polymer({
+      is: 'md-dialog',
+      behaviors: [Elliptical.ComponentBehavior],
+      properties: {
+        isOpen: {
+          type: Boolean,
+          value: false
+        },
+        disableModal: {
+          type: Boolean,
+          value: false
+        },
+        modalBackground: {
+          type: String,
+          value: '#fff'
+        },
+        modalOpacity: {
+          type: Number,
+          value: 0
+        },
+        modalZIndex: {
+          type: Number,
+          value: 2000
+        },
+        width: {
+          type: Number,
+          value: null
+        },
+        height: {
+          type: Number,
+          value: null
+        },
+        cancel: {
+          type: String,
+          value: 'Cancel'
+        },
+        actionId: {
+          type: String,
+          value: 'Action'
+        },
+        hideAction: {
+          type: Boolean,
+          value: false
+        },
+        actionType:{
+          type:String,
+          value:null
+        },
+        eventNamespace: {
+          type: String,
+          value: '-'
+        },
 
-            detached:function(){
-                var id=this.id;
-                if(id) this._listenerOff(id);
-                this._cancelListenerOff();
-                if(!this.hideAction) this._actionListenerOff();
-            },
+        identifier:{
+          type:String,
+          value:null
+        },
 
-            _listenerOn:function(){
-                var id=this.id;
-                var click=this._getClickEvent();
-                $(document).on('[dialog="' + id + '"]',click,this.open.bind(this));
-            },
+        _tl: {
+          type: Object,
+          value: null
+        },
 
-            _listenerOff:function(){
-                var id=this.id;
-                var click=this._getClickEvent();
-                $(document).off('[dialog="' + id + '"]',click,this.open.bind(this));
-            },
+        _animateDuration:{
+          type:Number,
+          value:.5
+        },
 
-            _cancelListener:function(){
-                var click=this._getClickEvent();
-                $(this).on(click,'[cancel]',this.close.bind(this));
-            },
+        _id: {
+          type: String,
+          value: 'dialog-1'
+        },
 
-            _actionListener:function(){
-                var click=this._getClickEvent();
-                $(this).on(click,'[action]',this._onAction.bind(this));
-            },
+        _resetActionId:{
+          type:Boolean,
+          value:false
+        }
+      },
+      ready: function () {
+        this._setId();
+        this._setCss();
+        this._setAction();
+        this._tl = new TimelineMax();
+        var id = this.id;
+        if (id) this._listenerOn(id);
+        this._cancelListener();
+        if (!this.hideAction) this._actionListener();
+        this._setActionId();
+      },
 
-            _cancelListenerOff:function(){
-                var click=this._getClickEvent();
-                $(this).off(click,'[cancel]',this.close.bind(this));
-            },
+      detached: function () {
+        var id = this.id;
+        if (id) this._listenerOff(id);
+        this._cancelListenerOff();
+        if (!this.hideAction) this._actionListenerOff();
+      },
 
-            _actionListenerOff:function(){
-                var click=this._getClickEvent();
-                $(this).off(click,'[cancel]',this._onAction.bind(this));
-            },
+      _listenerOn: function () {
+        var id = this.id;
+        var click = this._getClickEvent();
+        $(document).on('[dialog="' + id + '"]', click, this.open.bind(this));
+      },
 
-            _getClickEvent:function(){
-                return ('ontouchend' in document) ? 'touchstart' : 'click';
-            },
+      _listenerOff: function () {
+        var id = this.id;
+        var click = this._getClickEvent();
+        $(document).off('[dialog="' + id + '"]', click, this.open.bind(this));
+      },
 
-            _setAction:function(){
-                if(this.hideAction){
-                    var action=this.element.find('[action]');
-                    action.hide();
-                }
-            },
+      _cancelListener: function () {
+        var click = this._getClickEvent();
+        $(this).on(click, '[cancel]', this._onCancel.bind(this));
+      },
 
-            _onAction:function(){
-                this._fireEvent('action');
-            },
+      _actionListener: function () {
+        var click = this._getClickEvent();
+        $(this).on(click, '[action]:not(.disabled)', this._onAction.bind(this));
+      },
 
-            _fireEvent:function(evt){
-                var data={
-                    id:this.id,
-                    target:this,
-                    action:this.action,
-                    content:this.$.dialogContentContainer
-                };
-                $(document).trigger('md.dialog.' + evt,data);
-            },
+      _cancelListenerOff: function () {
+        var click = this._getClickEvent();
+        $(this).off(click, '[cancel]', this._onCancel.bind(this));
+      },
 
-            _renderOpened: function() {
-                this._renderModal();
-                this.style.display = 'block';
-                this._fireEvent('open');
-            },
-            _renderClosed: function() {
-                this._deleteModal();
-                this.style.display = 'none';
-                this._fireEvent('close');
-            },
+      _actionListenerOff: function () {
+        var click = this._getClickEvent();
+        $(this).off(click, '[cancel]', this._onAction.bind(this));
+      },
 
-            _renderModal:function(){
-                if(!this.disableModal){
-                    var opts={
-                        zIndex:this.modalZIndex,
-                        background:this.modalBackground,
-                        opacity:this.modalOpacity
-                    };
-                    this._setModal(opts);
-                }
-            },
+      _getClickEvent: function () {
+        return ('ontouchend' in document) ? 'touchend' : 'click';
+      },
 
-            _deleteModal:function(){
-                if(!this.disableModal) this._removeModal();
-            },
+      _setAction: function () {
+        if (this.hideAction) {
+          var action = this.element.find('[action]');
+          action.hide();
+        }
+      },
 
-            _setId:function(){
-                var id=this.element.attr('id');
-                if(!id) this.element.attr('id',this._id);
-            },
+      _setActionId: function(id){
+        if(this.actionId) {
+          this.$.dialogButtonAction.dataset.id=id;
+        }
+      },
 
-            _setCss:function(){
-                if(this._mq.touch){
-                    var viewportWidth=this._device.viewport.width;
-                    if(this.width) {
-                        if(this.width>viewportWidth) this.width=viewportWidth-20;
-                    }
-                    var viewportHeight=this._device.viewport.height;
-                    if(this.height){
-                        if(this.height > viewportHeight) this.height=viewportHeight-50;
-                    }
-                }
-                if(this.width){
-                    var width=this.width/2;
-                    this.element.css('width',this.width + 'px');
-                    this.element.css('left','calc(50% - ' + width + 'px)');
-                }
-                if(this.height){
-                    var height=this.height/2;
-                    this.element.css('height',this.height + 'px');
-                    this.element.css('top','calc(50% - ' + height + 'px)');
-                }
-            },
+      _onCancel: function () {
+        this._fireEvent('cancel');
+        this.close();
+      },
 
-            open:function(){
-                if (!this.isOpen) {
-                    this.isOpen = true;
-                    this._renderOpened();
-                }
-            },
+      _onAction: function () {
+        this._fireEvent('action');
+      },
 
-            close: function () {
-                if (this.isOpen) {
-                    this.isOpen = false;
-                    this._renderClosed();
-                }
-            },
+      _fireEvent: function (evt) {
+        var data = {
+          id: this.id,
+          target: this,
+          action: this.action,
+          content: this.$.dialogContentContainer
+        };
 
-            setContent:function(html){
-                var content=this.element.find('.content-container');
-                content.html(html);
-            }
+        var event = 'md' + this.eventNamespace + 'dialog' + this.eventNamespace + evt;
+        this.fire(event, data);
+      },
 
-        });
-    })();
+      _renderOpened: function (showModal) {
+        if (showModal) this._renderModal();
+        this.style.display = 'block';
+        this._fireEvent('open');
+      },
+
+      _renderClosed: function (closeModal) {
+        if (closeModal) this._deleteModal();
+        this.reset();
+        this._fireEvent('close');
+      },
+
+      _renderModal: function () {
+        if (!this.disableModal) {
+          var opts = {
+            zIndex: this.modalZIndex,
+            background: this.modalBackground,
+            opacity: this.modalOpacity
+          };
+          this._setModal(opts);
+        }
+      },
+
+      _deleteModal: function () {
+        if (!this.disableModal) this._removeModal();
+      },
+
+      _setId: function () {
+        var id = this.element.attr('id');
+        if (!id) this.element.attr('id', this._id);
+      },
+
+      _setCss: function () {
+        if (this._mq.touch) {
+          var viewportWidth = this._device.viewport.width;
+          if (this.width) {
+            if (this.width > viewportWidth) this.width = viewportWidth - 20;
+          }
+          var viewportHeight = this._device.viewport.height;
+          if (this.height) {
+            if (this.height > viewportHeight) this.height = viewportHeight - 50;
+          }
+        }
+        if (this.width) {
+          var width = this.width / 2;
+          this.element.css('width', this.width + 'px');
+          this.element.css('left', 'calc(50% - ' + width + 'px)');
+        }
+        if (this.height) {
+          var height = this.height / 2;
+          this.element.css('height', this.height + 'px');
+          this.element.css('top', 'calc(50% - ' + height + 'px)');
+        }
+      },
+
+      _getPosition:function(width,height){
+        var left=null,top=null,dWidth=null,dHeight=null;
+        var viewportWidth = this._device.viewport.width;
+        var viewportHeight = this._device.viewport.height;
+        if(width){
+          if(width<viewportWidth){
+            left=(viewportWidth-width)/2 + 'px';
+            dWidth=width +'px';
+          }else{
+            left=0;
+            dWidth=viewportWidth + 'px';
+          }
+        }
+
+        if(height){
+          if(height<viewportHeight){
+            top=(viewportHeight-height)/2 + 'px';
+            dHeight=height +'px';
+          }else{
+            top='10px';
+            dHeight=(viewportHeight-10) + 'px';
+          }
+        }
+
+        return{
+          top:top,
+          left:left,
+          height:dHeight,
+          width:dWidth
+        }
+      },
+
+      _setPositionForMobileDevice:function(){
+        var left,top,width,height,viewportWidth,viewportHeight;
+        viewportWidth=this._device.viewport.width;
+        width = viewportWidth-10;
+        viewportHeight=this._device.viewport.height;
+        height = viewportHeight-20;
+        if(height > 460) height=460;
+        left=(viewportWidth-width)/2;
+        top=(viewportHeight-height)/2;
+        this.style.height=height + 'px';
+        this.style.width=width + 'px';
+        this.style.top=top + 'px';
+        this.style.left=left + 'px';
+      },
+
+
+      _setPosition:function(position){
+        if(position.top) this.style.top=position.top;
+        if(position.left) this.style.left=position.left;
+        if(position.height) this.style.height=position.height;
+        if(position.width) this.style.width=position.width;
+      },
+
+      open: function (showModal,width,height) {
+        var _width=null;
+        var _height=null;
+        var length=arguments.length;
+        if(length===0) showModal = true;
+        else if(length===1){
+          if(typeof showModal==='number'){
+            _width=showModal;
+            showModal=true;
+          }else if(typeof showModal !=='boolean') showModal=true;
+        }else if(length===2){
+          if(typeof showModal==='number'){
+            _width=showModal;
+            _height=width;
+            showModal=true;
+          }else if(typeof showModal==='boolean'){
+            _width=width;
+          }
+        }else{
+          _width=width;
+          _height=height;
+        }
+
+        if (!this.isOpen) {
+          this.isOpen = true;
+          if(_width) {
+            this.style.width=_width + 'px';
+            var posW=this._getPosition(_width,null);
+            this._setPosition(posW);
+          }
+          if(_height) {
+            this.style.height=_height + 'px';
+            var posH=this._getPosition(null,_height);
+            this._setPosition(posH);
+          }
+          if(this._device.viewport.width < 640) this._setPositionForMobileDevice();
+          this._renderOpened(showModal);
+        }
+      },
+
+      close: function (hideModal) {
+        if (typeof hideModal === 'undefined') hideModal = true;
+        if (this.isOpen) {
+          this.isOpen = false;
+          this._renderClosed(hideModal);
+        }
+      },
+
+      setContent: function (html) {
+        var content = this.element.find('.content-container');
+        content.html(html);
+      },
+
+      animate: function (showModal,width, height) {
+
+        var length=arguments.length;
+        if(length===2){
+          height=width;
+          width=showModal;
+          showModal = true;
+        }
+        if(this._device.viewport.width < 640) {
+          this._setPositionForMobileDevice();
+          this._renderOpened(showModal);
+          return;
+        }
+
+        if (showModal) this._setModal();
+        var duration=this._animateDuration;
+        var position=this._getPosition(width,height);
+
+        var tl = this._tl;
+        tl.to(this, duration, {
+          width: position.width,
+          height: position.height,
+          left: position.left,
+          top: position.top,
+          ease: Power2.easeOut
+        })
+
+      },
+
+      clearModals: function () {
+        this._clearModals();
+      },
+
+      reset: function () {
+        this.isOpen = false;
+        this.setAttribute('style','');
+        this.identifier=null;
+        this.classList.remove('no-padding');
+        if(this._resetActionId) this.removeActionId();
+      },
+
+      disableAction:function(){
+        this.$.dialogButtonAction.classList.add('disabled');
+      },
+
+      enableAction:function(){
+        this.$.dialogButtonAction.classList.remove('disabled');
+      },
+
+      setActionId:function(id){
+        this._resetActionId=true;
+        this.actionId=id;
+        this.$.dialogButtonAction.dataset.id=id;
+      },
+
+      removeActionId:function(){
+        this._resetActionId=true;
+        this.actionId=null;
+        delete this.$.dialogButtonAction.dataset.id;
+      },
+
+      setNoContainerPadding:function(){
+        this.classList.add('no-padding');
+      },
+
+      resetContainerPadding:function(){
+        this.classList.remove('no-padding');
+      }
+
+    });
+  })();
 </script>
