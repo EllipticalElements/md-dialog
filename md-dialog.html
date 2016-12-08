@@ -159,10 +159,10 @@ this element.
         <content></content>
       </div>
       <div class="bottom">
-        <button id="dialogButtonCancel" cancel><span>[[cancel]]</span>
+        <button id="dialogButtonCancel" cancel><span id="cancelName">[[cancel]]</span>
           <paper-ripple></paper-ripple>
         </button>
-        <button id="dialogButtonAction" action><span>[[action]]</span>
+        <button id="dialogButtonAction" action><span id="actionName">[[action]]</span>
           <paper-ripple></paper-ripple>
         </button>
       </div>
@@ -224,7 +224,6 @@ this element.
           type: String,
           value: '-'
         },
-
         identifier:{
           type:String,
           value:null
@@ -332,6 +331,7 @@ this element.
           id: this.id,
           target: this,
           action: this.action,
+          actionId:this.actionId,
           content: this.$.dialogContentContainer
         };
 
@@ -551,6 +551,12 @@ this element.
         this.$.dialogButtonAction.classList.remove('disabled');
       },
 
+      setAction:function(action,actionId){
+         this.$.actionName.innerHTML=action;
+         if(!actionId) actionId=action;
+         this.setActionId(actionId);
+      },
+
       setActionId:function(id){
         this._resetActionId=true;
         this.actionId=id;
@@ -561,6 +567,10 @@ this element.
         this._resetActionId=true;
         this.actionId=null;
         delete this.$.dialogButtonAction.dataset.id;
+      },
+
+      setCancel:function(name){
+        this.$.cancelName.innerHTML=name;
       },
 
       setNoContainerPadding:function(){
