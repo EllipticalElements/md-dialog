@@ -493,8 +493,8 @@ this element.
         if (typeof hideModal === 'undefined') hideModal = true;
         if (this.isOpen) {
           this.isOpen = false;
-          this._renderClosed(hideModal);
         }
+        this._renderClosed(hideModal);
       },
 
       setContent: function (html) {
