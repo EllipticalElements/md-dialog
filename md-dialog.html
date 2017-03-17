@@ -502,6 +502,16 @@ this element.
         content.html(html);
       },
 
+      getContent:function(){
+        var content = this.element.find('.content-container');
+        return content[0];
+      },
+
+      removeContent: function (html) {
+        var content = this.element.find('.content-container');
+        content.empty();
+      },
+
       animate: function (showModal,width, height) {
 
         var length=arguments.length;
@@ -541,6 +551,7 @@ this element.
         this.identifier=null;
         this.classList.remove('no-padding');
         if(this._resetActionId) this.removeActionId();
+        this.removeContent();
       },
 
       disableAction:function(){
