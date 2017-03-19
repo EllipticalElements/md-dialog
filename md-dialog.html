@@ -580,6 +580,11 @@ this element.
         delete this.$.dialogButtonAction.dataset.id;
       },
 
+      removeAction:function(){
+        this.$.actionName.innerHTML='';
+        this.removeActionId();
+      },
+
       setCancel:function(name){
         this.$.cancelName.innerHTML=name;
       },
