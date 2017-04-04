@@ -92,6 +92,12 @@ this element.
     :host > .dialog-content-container > .content-container ::content header.stationary {
       position:absolute;
       z-index:20;
+      background:#fff;
+    }
+
+    :host > .dialog-content-container > .content-container ::content header.stationary.border {
+      position:absolute;
+      z-index:20;
       border-bottom:1px solid #eee;
       background:#fff;
     }
@@ -146,11 +152,15 @@ this element.
     }
 
     :host.hide-action-buttons .bottom {
-      display: none;
+      display: none !important;
     }
 
     :host .hide {
       display: none;
+    }
+
+    :host .bottom.hide {
+      display: none !important;
     }
   </style>
   <template>
@@ -158,7 +168,7 @@ this element.
       <div class="content-container">
         <content></content>
       </div>
-      <div class="bottom">
+      <div class="bottom" id="dialogBottom">
         <button id="dialogButtonCancel" cancel><span id="cancelName">[[cancel]]</span>
           <paper-ripple></paper-ripple>
         </button>
@@ -548,6 +558,7 @@ this element.
       reset: function () {
         this.isOpen = false;
         this.setAttribute('style','');
+        this.$.dialogBottom.classList.remove('hide');
         this.identifier=null;
         this.classList.remove('no-padding');
         if(this._resetActionId) this.removeActionId();
@@ -563,15 +574,23 @@ this element.
       },
 
       setAction:function(action,actionId){
-         this.$.actionName.innerHTML=action;
-         if(!actionId) actionId=action;
-         this.setActionId(actionId);
+        this.$.actionName.innerHTML=action;
+        if(!actionId) actionId=action;
+        this.setActionId(actionId);
       },
 
       setActionId:function(id){
         this._resetActionId=true;
         this.actionId=id;
         this.$.dialogButtonAction.dataset.id=id;
+      },
+
+      hideActions:function(){
+        this.$.dialogBottom.classList.add('hide');
+      },
+
+      showActions:function(){
+        this.$.dialogBottom.classList.remove('hide');
       },
 
       removeActionId:function(){
